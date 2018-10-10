@@ -44,14 +44,16 @@
   Ignores dot files unless explicitly included.
 
   Examples: (glob \"*.{jpg,gif}\") (glob \".*\") (glob \"/usr/*/se*\")"
-  [pattern]
-  (let [[root & _ :as parts] (.split #"[\\/]" pattern)
-        abs? (or (empty? root) ;unix
-                 (= \: (second root))) ;windows
-        start-dir (if abs? (get-root-file root) (get-cwd-file))
-        patterns (map glob->regex (if abs? (rest parts) parts))]
-    (reduce
-     (fn [files re]
-       (mapcat #(filter-dir % re) files))
-     [start-dir]
-     patterns)))
+  ([pattern] (glob pattern nil))
+  ([pattern cwd-file]
+   (let [[root & _ :as parts] (.split #"[\\/]" pattern)
+         abs? (or (empty? root) ;unix
+                  (= \: (second root))) ;windows
+         start-dir (or cwd-file
+                       (if abs? (get-root-file root) (get-cwd-file)))
+         patterns (map glob->regex (if abs? (rest parts) parts))]
+     (reduce
+      (fn [files re]
+        (mapcat #(filter-dir % re) files))
+      [start-dir]
+      patterns))))
