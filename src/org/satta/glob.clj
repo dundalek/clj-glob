@@ -49,8 +49,7 @@
    (let [[root & _ :as parts] (.split #"[\\/]" pattern)
          abs? (or (empty? root) ;unix
                   (= \: (second root))) ;windows
-         start-dir (or cwd-file
-                       (if abs? (get-root-file root) (get-cwd-file)))
+         start-dir (if abs? (get-root-file root) (or cwd-file (get-cwd-file)))
          patterns (map glob->regex (if abs? (rest parts) parts))]
      (reduce
       (fn [files re]
